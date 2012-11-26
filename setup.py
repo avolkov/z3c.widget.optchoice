@@ -1,5 +1,6 @@
 from setuptools import setup, find_packages
 import sys, os
+import multiprocessing
 
 version = '0.1dev'
 
@@ -18,10 +19,11 @@ Optional choice widget for z3c library. This widget lets user select an entry fr
       include_package_data=True,
       zip_safe=False,
       install_requires=[
-          'z3c.form'
+          'z3c.form',
+          'zope.browserpage'
       ],
       test_suite='nose.collector',
-      test_requires=['Nose'],
+      test_requires=['unittest2', 'Nose','coverage'],
       entry_points="""
       # -*- Entry points: -*-
       """,

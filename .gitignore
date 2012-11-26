@@ -1,3 +1,7 @@
 .project
 .pydevproject
 *.egg-info
+build
+dist
+.coverage
+*.pyc
