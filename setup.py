@@ -20,7 +20,9 @@ Optional choice widget for z3c library. This widget lets user select an entry fr
       zip_safe=False,
       install_requires=[
           'z3c.form',
+          'z3c.schema',
           'zope.browserpage',
+          'zope.location == 3.9.1' ,
           'lxml'
       ],
       test_suite='nose.collector',
