@@ -35,6 +35,7 @@ class TestBasicOptChoice(unittest.TestCase):
         oc = OptChoiceWidget(self.request)
         oc.terms = sample_terms
         oc.name = 'opt-widget'
+        oc.ignoreContext = True
         oc.update()
         data = oc.render()
         self.assertGreaterEqual(len(data), 28)

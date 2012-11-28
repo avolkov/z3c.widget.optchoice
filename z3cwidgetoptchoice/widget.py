@@ -10,9 +10,10 @@ from zope.traversing.adapters import DefaultTraversable
 from zope.browserpage.viewpagetemplatefile import ViewPageTemplateFile
 
 from z3c.form.widget import Widget, FieldWidget
+from z3c.form.browser.widget import HTMLSelectWidget
 from z3c.form import interfaces
 
-class OptChoiceWidget(Widget):
+class OptChoiceWidget(HTMLSelectWidget, Widget):
     zope.interface.implements(interfaces.ISequenceWidget)
     value = ()
     terms = None
