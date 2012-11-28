@@ -13,12 +13,7 @@ from z3c.form.widget import Widget, FieldWidget
 from z3c.form import interfaces
 
 class OptChoiceWidget(Widget):
-    #http://www.llakomy.com/articles/testing-templates-with-zope-2.10
     zope.interface.implements(interfaces.ISequenceWidget)
-   # zope.interface.implements(interfaces.ISequenceWidget, ITraversable)
-   # provideAdapter(DefaultTraversable, (zope.interface.Interface, 
-   #                                     interfaces.ISequenceWidget),
-   #                ITraversable)
     value = ()
     terms = None
     klass = u'optchoice-widget'
