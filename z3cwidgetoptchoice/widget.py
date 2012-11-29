@@ -9,6 +9,8 @@ from zope.component import provideAdapter
 from zope.traversing.interfaces import ITraversable
 from zope.traversing.adapters import DefaultTraversable
 from zope.browserpage.viewpagetemplatefile import ViewPageTemplateFile
+from zope.interface.verify import verifyObject
+from zope.interface.exceptions import DoesNotImplement
 
 from z3c.form.widget import Widget, FieldWidget
 from z3c.form.browser.widget import HTMLSelectWidget
@@ -21,11 +23,15 @@ class OptChoiceWidget(HTMLSelectWidget, Widget):
     klass = u'optchoice-widget'
     hw = "Hello, world!"
     noValueToken ='--NOVALUE--'
+    other_token = None
 
-    def __init__(self, request):
+    def __init__(self, request, other_token=None):
         dirname = os.path.dirname(os.path.abspath(__file__))
         outp = os.path.join(dirname, 'templates', 'optchoice.pt')
         self.template = ViewPageTemplateFile(outp)
+        if other_token:
+            self.other_token = other_token
+
         super(self.__class__, self).__init__(request)
 
     def render(self):
@@ -36,7 +42,23 @@ class OptChoiceWidget(HTMLSelectWidget, Widget):
         if self.terms is None:
             self.terms = zope.component.getMultiAdapter(
                 (self.context, self.request, self.form, self.field, self),
-                interfaces.ITerms)
+                interfaces.ITerms
+                                                        )
+        if not self.other_token:
+            return self.terms
+        if self.other_token in self.terms:
+            return self.terms
+        #Add 'other' token to the end of options list
+        try:
+            verifyObject(interfaces.ITerms, self.other_token)
+        except DoesNotImplement:
+            #Prep the token that is presumably a tuple
+            if len(self.other_token) == 2:
+                list(self.other_token).append(self.other_token[-1])
+            all_tokens = [ x for x in self.terms ]
+            self.other_token = self.terms.createTerm(*self.other_token)
+            all_tokens.append(self.other_token)
+            self.terms = self.terms.__class__(all_tokens)
         return self.terms
     def update(self):
         """This is where all the interesting stuff happens"""
@@ -77,3 +99,10 @@ class OptChoiceWidget(HTMLSelectWidget, Widget):
 def OptChoiceWidgetFactory(field, request):
     """IFieldWidget factory for OptChoiceWidget"""
     return FieldWidget(field, OptChoiceWidget(request))
+
+@zope.component.adapter(zope.schema.interfaces.IField, interfaces.IFormLayer)
+def OptchoiceWidgetOtherFactory(field, request, other_token):
+    """
+    IField widget factory that specifies other token for optional input field
+    """
+    return FieldWidget(field, OptChoiceWidget(request, other_token=other_token))

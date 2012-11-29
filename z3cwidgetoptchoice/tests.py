@@ -23,6 +23,8 @@ longer_sample_terms = SimpleVocabulary([
                         SimpleTerm(value="f7", title="Seven"),
                         SimpleTerm(value="f8", title="Eight"),
                                         ])
+ot = ('other', "Other")
+
 comparison_terms = ["first", "second"]
 
 class TestBasicOptChoice(unittest.TestCase):
@@ -71,3 +73,13 @@ class TestBasicOptChoice(unittest.TestCase):
         self.assertIn('id="oc1-0"', rendered_data)
         self.assertIn('id="oc1-7"', rendered_data)
         self.assertEqual(8, rendered_data.count('value="f'))
+    def test_optional_input_token_present(self):
+        """Make sure that the optional input token is appended to the list"""
+        token_widget = OptChoiceWidget(self.request,other_token=ot)
+        token_widget.name = 'opt-choice-in'
+        token_widget.id = 'tw'
+        token_widget.terms = longer_sample_terms
+        token_widget.update()
+        items = token_widget.items
+        self.assertEqual(len(items), len(longer_sample_terms)+1)
+        self.assertEqual(items[-1]['content'], 'Other')
