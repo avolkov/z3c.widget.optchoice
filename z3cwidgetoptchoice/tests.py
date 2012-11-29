@@ -13,6 +13,16 @@ sample_terms = SimpleVocabulary([
                         SimpleTerm(value="first", title="First"),
                         SimpleTerm(value="second", title="Second")
                                 ])
+longer_sample_terms = SimpleVocabulary([
+                        SimpleTerm(value="f1", title="One"),
+                        SimpleTerm(value="f2", title="Two"),
+                        SimpleTerm(value="f3", title="Three"),
+                        SimpleTerm(value="f4", title="Four"),
+                        SimpleTerm(value="f5", title="Five"),
+                        SimpleTerm(value="f6", title="Six"),
+                        SimpleTerm(value="f7", title="Seven"),
+                        SimpleTerm(value="f8", title="Eight"),
+                                        ])
 comparison_terms = ["first", "second"]
 
 class TestBasicOptChoice(unittest.TestCase):
@@ -50,3 +60,14 @@ class TestBasicOptChoice(unittest.TestCase):
         opt_widget = OptChoiceWidget(self.request)
         opt_widget.name = 'opt-choice'
         self.assertIsNone(opt_widget.terms)
+    def test_render_sequence(self):
+        opt_widget = OptChoiceWidget(self.request)
+        opt_widget.name = 'opt-choice'
+        opt_widget.id = 'oc1'
+        opt_widget.terms = longer_sample_terms
+        opt_widget.update()
+        rendered_data = opt_widget.render()
+        self.assertIn('id="oc1"', rendered_data)
+        self.assertIn('id="oc1-0"', rendered_data)
+        self.assertIn('id="oc1-7"', rendered_data)
+        self.assertEqual(8, rendered_data.count('value="f'))

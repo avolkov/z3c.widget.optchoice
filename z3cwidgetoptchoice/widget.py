@@ -4,6 +4,7 @@ import zope.schema
 import zope.component
 import zope.interface
 
+from zope.i18n import translate
 from zope.component import provideAdapter
 from zope.traversing.interfaces import ITraversable
 from zope.traversing.adapters import DefaultTraversable
@@ -22,7 +23,6 @@ class OptChoiceWidget(HTMLSelectWidget, Widget):
     noValueToken ='--NOVALUE--'
 
     def __init__(self, request):
-        self.items = None
         dirname = os.path.dirname(os.path.abspath(__file__))
         outp = os.path.join(dirname, 'templates', 'optchoice.pt')
         self.template = ViewPageTemplateFile(outp)
@@ -48,6 +48,30 @@ class OptChoiceWidget(HTMLSelectWidget, Widget):
         value = self.request.get(self.name, default)
         #TODO: add more or fewer checks compared to SequenceWidget
         return value
+    def isSelected(self, term):
+        return term.token in self.value
+    @property
+    def items(self):
+        """
+        Using z3c.form.browser.select -- SelectWidget.items
+        """
+        if self.terms is None:
+            return ()
+        items = []
+        for count, term in enumerate(self.terms):
+            selected = self.isSelected(term)
+            id = "%s-%i" % (self.id, count)
+            content = term.token
+            if zope.schema.interfaces.ITitledTokenizedTerm.providedBy(term):
+                content = translate(term.title, context=self.request,
+                                    default=term.title)
+            items.append({
+                          'id':id,
+                          'value':term.token,
+                          'content':content,
+                          'selected':selected,
+                          })
+        return items
 
 @zope.component.adapter(zope.schema.interfaces.IField, interfaces.IFormLayer)
 def OptChoiceWidgetFactory(field, request):
