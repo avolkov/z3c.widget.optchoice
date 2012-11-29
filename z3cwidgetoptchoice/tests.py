@@ -3,6 +3,7 @@ import unittest2 as unittest
 from zope import component
 from zope.traversing.adapters import DefaultTraversable
 from zope.traversing.namespace import view
+from z3c.form.term import ChoiceTermsVocabulary
 from z3c.form.testing import TestRequest
 from widget import OptChoiceWidget, OptChoiceWidgetCustomTokenFactoryFactory
 from zope.schema.vocabulary import SimpleVocabulary, SimpleTerm
@@ -88,6 +89,7 @@ class TestBasicOptChoice(unittest.TestCase):
         items = token_widget.items
         self.assertEqual(len(items), len(longer_sample_terms)+1)
         self.assertEqual(items[-1]['content'], 'Other')
+
     def test_select_input_extract(self):
         """Base case for extract method -- select one of the values"""
         oc = OptChoiceWidget(self.request)
@@ -112,3 +114,32 @@ class TestBasicOptChoice(unittest.TestCase):
         factory = OptChoiceWidgetCustomTokenFactoryFactory(ot)
         self.assertDictEqual(factory.keywords,
                               {'other_token':('other', 'Other')})
+
+    def test_select_in_wrapper(self):
+        """
+        Test when SimpleVocabulary is wrapped with
+        z3c.form.term.ChoiceTermsVocabulary
+        """
+        ct = ChoiceTermsVocabulary(*[None]*6)
+        ct.terms = sample_terms
+        oc = OptChoiceWidget(self.request, other_token=ot)
+        oc.name = oc.id = 'optional_widget'
+        oc.terms = ct
+        oc.update()
+        self.assertEquals(len(oc.terms.terms), len(sample_terms)+1)
+
+    def test_select_in_wrapper_SimpleTerm(self):
+        """
+        Test when SimpleVocabulary is wrapped with
+        z3c.form.term.ChoiceTermsVocabulary, passing SimpleTerm instead of a
+         tuple
+        """
+        ct = ChoiceTermsVocabulary(*[None]*6)
+        ct.terms = sample_terms
+        oc = OptChoiceWidget(self.request,
+                             other_token=SimpleTerm('other', "Other", "Other")
+                            )
+        oc.name = oc.id = 'optional_widget'
+        oc.terms = ct
+        oc.update()
+        self.assertEquals(len(oc.terms.terms), len(sample_terms)+1)

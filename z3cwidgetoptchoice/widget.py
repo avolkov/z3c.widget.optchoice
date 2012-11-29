@@ -18,6 +18,20 @@ from z3c.form.widget import Widget, FieldWidget
 from z3c.form.browser.widget import HTMLSelectWidget
 from z3c.form import interfaces
 
+def append_to_terms(terms, input_field_token):
+    input_field_term = None
+    try:
+        verifyObject(zope.schema.interfaces.ITokenizedTerm, input_field_token)
+        input_field_term = input_field_token
+    except DoesNotImplement:
+        if len(input_field_token) == 2:
+                list(input_field_token).append(input_field_token[-1])
+        input_field_term = terms.createTerm(*input_field_token)
+    all_terms = [ x for x in terms]
+    del input_field_token
+    all_terms.append(input_field_term)
+    return (terms.__class__(all_terms), input_field_term)
+
 class OptChoiceWidget(HTMLSelectWidget, Widget):
     zope.interface.implements(interfaces.ISequenceWidget)
     value = ()
@@ -49,31 +63,34 @@ class OptChoiceWidget(HTMLSelectWidget, Widget):
             return self.terms
         if self.other_token in self.terms:
             return self.terms
-        #Add 'other' token to the end of options list
         try:
-            verifyObject(interfaces.ITerms, self.other_token)
+            #Assume terms is SimpleVocabulary-ish
+            verifyObject(zope.schema.interfaces.IVocabularyTokenized,
+                         self.terms)
+            self.terms, self.other_token = append_to_terms(self.terms,
+                                                           self.other_token)
+            return self.terms
         except DoesNotImplement:
-            #Prep the token that is presumably a tuple
-            if len(self.other_token) == 2:
-                list(self.other_token).append(self.other_token[-1])
-            all_tokens = [ x for x in self.terms ]
-            self.other_token = self.terms.createTerm(*self.other_token)
-            all_tokens.append(self.other_token)
-            self.terms = self.terms.__class__(all_tokens)
+            pass
+
+        #Assume self.terms.terms is SimpleVocabulary-ish
+        verifyObject(interfaces.ITerms, self.terms)
+        verifyObject(zope.schema.interfaces.IVocabularyTokenized,
+                      self.terms.terms)
+        self.terms.terms, self.other_token = \
+            append_to_terms(self.terms.terms, self.other_token)
         return self.terms
     def update(self):
         """This is where all the interesting stuff happens"""
         self.updateTerms()
         super(self.__class__, self).update()
     def extract(self, default=interfaces.NO_VALUE):
-        #Get value from the request
-        #TODO: check that value exists
+        """Extract values from the request"""
         value = self.request.get(self.name, default)
         if not isinstance(value, list):
             value = [value]
         if self.other_token and self.other_token.value in value:
             value = [self.request.get("%s-input" % self.name, default)]
-        #TODO: add more or fewer checks compared to SequenceWidget
         return value
     def isSelected(self, term):
         return term.token in self.value
