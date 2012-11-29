@@ -1,4 +1,6 @@
 import os.path
+from functools import partial
+
 import zope.interface
 import zope.schema
 import zope.component
@@ -21,7 +23,6 @@ class OptChoiceWidget(HTMLSelectWidget, Widget):
     value = ()
     terms = None
     klass = u'optchoice-widget'
-    hw = "Hello, world!"
     noValueToken ='--NOVALUE--'
     other_token = None
 
@@ -68,6 +69,10 @@ class OptChoiceWidget(HTMLSelectWidget, Widget):
         #Get value from the request
         #TODO: check that value exists
         value = self.request.get(self.name, default)
+        if not isinstance(value, list):
+            value = [value]
+        if self.other_token and self.other_token.value in value:
+            value = [self.request.get("%s-input" % self.name, default)]
         #TODO: add more or fewer checks compared to SequenceWidget
         return value
     def isSelected(self, term):
@@ -101,8 +106,15 @@ def OptChoiceWidgetFactory(field, request):
     return FieldWidget(field, OptChoiceWidget(request))
 
 @zope.component.adapter(zope.schema.interfaces.IField, interfaces.IFormLayer)
-def OptchoiceWidgetOtherFactory(field, request, other_token):
+def OptchoiceWidgetCustomTokenFactory(field, request, other_token=None):
     """
     IField widget factory that specifies other token for optional input field
     """
     return FieldWidget(field, OptChoiceWidget(request, other_token=other_token))
+
+#Sorry for javascript names, I blame zope.
+def OptChoiceWidgetCustomTokenFactoryFactory(token):
+    """
+    A factory that creates custom token with token set -- a case of currying
+    """
+    return partial(OptchoiceWidgetCustomTokenFactory, other_token=token)

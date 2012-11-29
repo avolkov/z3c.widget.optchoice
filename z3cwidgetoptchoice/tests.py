@@ -4,7 +4,7 @@ from zope import component
 from zope.traversing.adapters import DefaultTraversable
 from zope.traversing.namespace import view
 from z3c.form.testing import TestRequest
-from widget import OptChoiceWidget
+from widget import OptChoiceWidget, OptChoiceWidgetCustomTokenFactoryFactory
 from zope.schema.vocabulary import SimpleVocabulary, SimpleTerm
 
 from zope.component.interfaces import ComponentLookupError
@@ -36,6 +36,7 @@ class TestBasicOptChoice(unittest.TestCase):
 
     def test_import(self):
         self.assertEqual(OptChoiceWidget.__name__, 'OptChoiceWidget')
+
     def test_custom_template_noterms(self):
         """Sequence widget with no terms raises ComponentLookupError"""
         oc = OptChoiceWidget(self.request)
@@ -51,6 +52,7 @@ class TestBasicOptChoice(unittest.TestCase):
         oc.update()
         data = oc.render()
         self.assertGreaterEqual(len(data), 28)
+
     def test_custom_template_terms2(self):
         """A call to update doesn't change the terms"""
         oc = OptChoiceWidget(self.request)
@@ -58,10 +60,12 @@ class TestBasicOptChoice(unittest.TestCase):
         oc.terms = sample_terms
         oc.update()
         self.assertListEqual([x.value for x in oc.terms], comparison_terms )
+
     def test_init_widget(self):
         opt_widget = OptChoiceWidget(self.request)
         opt_widget.name = 'opt-choice'
         self.assertIsNone(opt_widget.terms)
+
     def test_render_sequence(self):
         opt_widget = OptChoiceWidget(self.request)
         opt_widget.name = 'opt-choice'
@@ -73,6 +77,7 @@ class TestBasicOptChoice(unittest.TestCase):
         self.assertIn('id="oc1-0"', rendered_data)
         self.assertIn('id="oc1-7"', rendered_data)
         self.assertEqual(8, rendered_data.count('value="f'))
+
     def test_optional_input_token_present(self):
         """Make sure that the optional input token is appended to the list"""
         token_widget = OptChoiceWidget(self.request,other_token=ot)
@@ -83,3 +88,27 @@ class TestBasicOptChoice(unittest.TestCase):
         items = token_widget.items
         self.assertEqual(len(items), len(longer_sample_terms)+1)
         self.assertEqual(items[-1]['content'], 'Other')
+    def test_select_input_extract(self):
+        """Base case for extract method -- select one of the values"""
+        oc = OptChoiceWidget(self.request)
+        oc.name = oc.id = 'oc'
+        oc.terms = sample_terms
+        oc.request = TestRequest(form={'oc':['first']})
+        values = oc.extract()
+        self.assertListEqual(values, ['first'])
+
+    def test_select_custom_input(self):
+        """Extract data from input field"""
+        """Base case for extract method -- select one of the values"""
+        oc = OptChoiceWidget(self.request, other_token=ot)
+        oc.name = oc.id = 'oc'
+        oc.terms = sample_terms
+        oc.update()
+        oc.request = TestRequest(form={'oc':['other'], 'oc-input':'testval1'})
+        values = oc.extract()
+        self.assertListEqual(['testval1'], values)
+
+    def test_custom_token_factory(self):
+        factory = OptChoiceWidgetCustomTokenFactoryFactory(ot)
+        self.assertDictEqual(factory.keywords,
+                              {'other_token':('other', 'Other')})
