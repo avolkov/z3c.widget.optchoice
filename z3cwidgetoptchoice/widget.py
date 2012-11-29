@@ -22,6 +22,7 @@ class OptChoiceWidget(HTMLSelectWidget, Widget):
     noValueToken ='--NOVALUE--'
 
     def __init__(self, request):
+        self.items = None
         dirname = os.path.dirname(os.path.abspath(__file__))
         outp = os.path.join(dirname, 'templates', 'optchoice.pt')
         self.template = ViewPageTemplateFile(outp)
