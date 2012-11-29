@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import sys, os
 import multiprocessing
 
-version = '0.1dev'
+version = '0.1'
 
 setup(name='z3c.widget.optchoice',
       version=version,
@@ -22,7 +22,7 @@ Optional choice widget for z3c library. This widget lets user select an entry fr
           'z3c.form',
           'z3c.schema',
           'zope.browserpage',
-          'zope.location == 3.9.1' ,
+          'zope.location <= 3.9.1' ,
           'lxml'
       ],
       test_suite='nose.collector',

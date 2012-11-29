@@ -1,0 +1,3 @@
+include *.txt *.zcml *.cfg *.pt
+recursive-include z3cwidgetoptchoice *.txt *.py *.zcml *.cfg *.pt
+recursive-include z3cwidgetoptchoice/templates *.pt
