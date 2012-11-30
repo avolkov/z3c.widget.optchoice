@@ -1,14 +1,19 @@
 import unittest2 as unittest
 
+import zope.interface
+import zope.schema
 from zope import component
+from zope.schema.vocabulary import SimpleVocabulary, SimpleTerm
 from zope.traversing.adapters import DefaultTraversable
 from zope.traversing.namespace import view
+from zope.component.interfaces import ComponentLookupError
+
 from z3c.form.term import ChoiceTermsVocabulary
 from z3c.form.testing import TestRequest
-from widget import OptChoiceWidget, OptChoiceWidgetCustomTokenFactoryFactory
-from zope.schema.vocabulary import SimpleVocabulary, SimpleTerm
+from z3c.schema.optchoice import OptionalChoice
+from z3c.form import form, field, interfaces
 
-from zope.component.interfaces import ComponentLookupError
+from widget import OptChoiceWidget, OptChoiceWidgetCustomTokenFactoryFactory
 
 sample_terms = SimpleVocabulary([
                         SimpleTerm(value="first", title="First"),
@@ -27,6 +32,16 @@ longer_sample_terms = SimpleVocabulary([
 ot = ('other', "Other")
 
 comparison_terms = ["first", "second"]
+
+class ISchema(zope.interface.Interface):
+    test_name = OptionalChoice(
+            title= u"This is a title",
+            values=sample_terms,
+            value_type=zope.schema.TextLine(),
+                          )
+class SampleForm(form.AddForm):
+    fields = field.Fields(ISchema)
+    fields['test_name'].widgetFactory = OptChoiceWidgetCustomTokenFactoryFactory(('other', "Other"))
 
 class TestBasicOptChoice(unittest.TestCase):
     def setUp(self):
@@ -143,3 +158,17 @@ class TestBasicOptChoice(unittest.TestCase):
         oc.terms = ct
         oc.update()
         self.assertEquals(len(oc.terms.terms), len(sample_terms)+1)
+
+from zope.app.testing import setup as ztc_setup
+
+class TestFunctionalForm(unittest.TestCase):
+    def setUp(self):
+        component.provideAdapter(DefaultTraversable, [None])
+        self.context = ztc_setup.placefulSetUp(True)
+    def tearDown(self):
+        ztc_setup.placefulTearDown()
+    def test_add_form(self):
+        zope.interface.classImplementsOnly(field.FieldWidgets,
+                                           interfaces.IWidgets)
+        sample_form = SampleForm(self.context, TestRequest())
+        data = sample_form.updateWidgets()
