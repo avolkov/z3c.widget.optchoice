@@ -13,6 +13,8 @@ from z3c.form.testing import TestRequest
 from z3c.schema.optchoice import OptionalChoice
 from z3c.form import form, field, interfaces
 
+from zope.app.testing import setup as ztc_setup
+from zope.configuration import xmlconfig
 from widget import OptChoiceWidget, OptChoiceWidgetCustomTokenFactoryFactory
 
 sample_terms = SimpleVocabulary([
@@ -159,10 +161,21 @@ class TestBasicOptChoice(unittest.TestCase):
         oc.update()
         self.assertEquals(len(oc.terms.terms), len(sample_terms)+1)
 
-from zope.app.testing import setup as ztc_setup
+def setupWidget(field):
+    request = TestRequest()
+    widget = zope.component.getMultiAdapter((field, request), 
+                                            interfaces.IFieldWidget)
+    widget.id = 'foo'
+    widget.name = 'bar'
+    return widget
+
 
 class TestFunctionalForm(unittest.TestCase):
     def setUp(self):
+        import z3c.widget.optchoice
+        xmlconfig.XMLConfig('meta.zcml', z3c.widget.optchoice)()
+        xmlconfig.XMLConfig('configure.zcml', z3c.widget.optchoice)()
+        
         component.provideAdapter(DefaultTraversable, [None])
         self.context = ztc_setup.placefulSetUp(True)
     def tearDown(self):
