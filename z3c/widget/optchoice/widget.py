@@ -13,6 +13,7 @@ from zope.traversing.adapters import DefaultTraversable
 from zope.browserpage.viewpagetemplatefile import ViewPageTemplateFile
 from zope.interface.verify import verifyObject
 from zope.interface.exceptions import DoesNotImplement
+from zope.component.interfaces import ComponentLookupError
 
 from z3c.form.widget import Widget, FieldWidget
 from z3c.form.browser.widget import HTMLSelectWidget
@@ -55,16 +56,26 @@ class OptChoiceWidget(HTMLSelectWidget, Widget):
 
     def updateTerms(self):
         if self.terms is None:
-            self.terms = zope.component.getMultiAdapter(
-                (self.context, self.request, self.form, self.field, self),
-                interfaces.ITerms
-                                                        )
+            try:
+                self.terms = zope.component.getMultiAdapter(
+                    (self.context, self.request, self.form, self.field, self),
+                    interfaces.ITerms
+                                                            )
+            except ComponentLookupError:
+                '''
+                I don't know how getMultiAdapter supposed to work, so instead
+                I wrote this ugly hack. Enjoy!
+                '''
+                if self.field:
+                    self.terms = self.field.vocabulary
+                else:
+                    raise
         if not self.other_token:
             return self.terms
         if self.other_token in self.terms:
             return self.terms
         try:
-            #Assume terms is SimpleVocabulary-ish
+            #Assume terms are SimpleVocabulary-ish
             verifyObject(zope.schema.interfaces.IVocabularyTokenized,
                          self.terms)
             self.terms, self.other_token = append_to_terms(self.terms,

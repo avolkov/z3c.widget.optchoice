@@ -11,27 +11,32 @@ from zope.component.interfaces import ComponentLookupError
 from z3c.form.term import ChoiceTermsVocabulary
 from z3c.form.testing import TestRequest
 from z3c.schema.optchoice import OptionalChoice
-from z3c.form import form, field, interfaces
+from z3c.form import form, field, interfaces, testing
 from z3c.schema.optchoice.interfaces import IOptionalChoice
 
-from zope.app.testing import setup as ztc_setup
 from zope.configuration import xmlconfig
 from widget import OptChoiceWidget, OptChoiceWidgetCustomTokenFactoryFactory
 
-sample_terms = SimpleVocabulary([
-                        SimpleTerm(value="first", title="First"),
-                        SimpleTerm(value="second", title="Second")
-                                ])
-longer_sample_terms = SimpleVocabulary([
-                        SimpleTerm(value="f1", title="One"),
-                        SimpleTerm(value="f2", title="Two"),
-                        SimpleTerm(value="f3", title="Three"),
-                        SimpleTerm(value="f4", title="Four"),
-                        SimpleTerm(value="f5", title="Five"),
-                        SimpleTerm(value="f6", title="Six"),
-                        SimpleTerm(value="f7", title="Seven"),
-                        SimpleTerm(value="f8", title="Eight"),
-                                        ])
+
+class Terms(SimpleVocabulary):
+    zope.interface.implements(interfaces.ITerms)
+    def getValue(self, token):
+        return self.getTermByToken(token).value
+
+sample_terms = Terms([
+        SimpleTerm(value="first", title="First"),
+        SimpleTerm(value="second", title="Second")
+                    ])
+longer_sample_terms = Terms([
+        SimpleTerm(value="f1", title="One"),
+        SimpleTerm(value="f2", title="Two"),
+        SimpleTerm(value="f3", title="Three"),
+        SimpleTerm(value="f4", title="Four"),
+        SimpleTerm(value="f5", title="Five"),
+        SimpleTerm(value="f6", title="Six"),
+        SimpleTerm(value="f7", title="Seven"),
+        SimpleTerm(value="f8", title="Eight"),
+                            ])
 ot = ('other', "Other")
 
 comparison_terms = ["first", "second"]
@@ -44,7 +49,8 @@ class ISchema(zope.interface.Interface):
                           )
 class SampleForm(form.AddForm):
     fields = field.Fields(ISchema)
-    fields['test_name'].widgetFactory = OptChoiceWidgetCustomTokenFactoryFactory(('other', "Other"))
+    fields['test_name'].widgetFactory = \
+        OptChoiceWidgetCustomTokenFactoryFactory(('other', "Other"))
 
 class TestBasicOptChoice(unittest.TestCase):
     def setUp(self):
@@ -173,15 +179,22 @@ def setupWidget(field):
 
 class TestFunctionalForm(unittest.TestCase):
     def setUp(self):
-        import z3c.widget.optchoice
-
-        xmlconfig.XMLConfig('meta.zcml', z3c.widget.optchoice)()
-        xmlconfig.XMLConfig('configure.zcml', z3c.widget.optchoice)()
+        #import z3c.widget.optchoice
+        #xmlconfig.XMLConfig('meta.zcml', z3c.widget.optchoice)()
+        #xmlconfig.XMLConfig('configure.zcml', z3c.widget.optchoice)()
+        testing.setUp(self)
         component.provideAdapter(field.FieldWidgets)
         component.provideAdapter(DefaultTraversable, [None])
-        self.context = ztc_setup.placefulSetUp(True)
+        component.provideAdapter(OptionalChoice, [interfaces.ITerms], 
+                                 provides=zope.schema.interfaces.IField)
+        #component.registerAdapter(OptionalChoice, 
+        #                          provided=zope.schema.interfaces.IField)
+        #component.provideAdapter(Ter)
+        #self.context = ztc_setup.placefulSetUp(True)
     def tearDown(self):
-        ztc_setup.placefulTearDown()
+        testing.tearDown(self)
+        #ztc_setup.placefulTearDown()
     def test_add_form(self):
-        sample_form = SampleForm(self.context, TestRequest())
+        #import pdb; pdb.set_trace()
+        sample_form = SampleForm(self.globs['root'], TestRequest())
         data = sample_form.updateWidgets()
