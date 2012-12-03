@@ -168,7 +168,5 @@ class TestFunctionalForm(unittest.TestCase):
     def tearDown(self):
         ztc_setup.placefulTearDown()
     def test_add_form(self):
-        zope.interface.classImplementsOnly(field.FieldWidgets,
-                                           interfaces.IWidgets)
         sample_form = SampleForm(self.context, TestRequest())
         data = sample_form.updateWidgets()
