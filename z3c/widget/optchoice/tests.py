@@ -179,18 +179,9 @@ def setupWidget(field):
 
 class TestFunctionalForm(unittest.TestCase):
     def setUp(self):
-        #import z3c.widget.optchoice
-        #xmlconfig.XMLConfig('meta.zcml', z3c.widget.optchoice)()
-        #xmlconfig.XMLConfig('configure.zcml', z3c.widget.optchoice)()
         testing.setUp(self)
         component.provideAdapter(field.FieldWidgets)
         component.provideAdapter(DefaultTraversable, [None])
-        component.provideAdapter(OptionalChoice, [interfaces.ITerms], 
-                                 provides=zope.schema.interfaces.IField)
-        #component.registerAdapter(OptionalChoice, 
-        #                          provided=zope.schema.interfaces.IField)
-        #component.provideAdapter(Ter)
-        #self.context = ztc_setup.placefulSetUp(True)
     def tearDown(self):
         testing.tearDown(self)
         #ztc_setup.placefulTearDown()

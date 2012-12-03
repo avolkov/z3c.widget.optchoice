@@ -59,17 +59,17 @@ class OptChoiceWidget(HTMLSelectWidget, Widget):
             try:
                 self.terms = zope.component.getMultiAdapter(
                     (self.context, self.request, self.form, self.field, self),
-                    interfaces.ITerms
-                                                            )
+                    interfaces.ITerms)
             except ComponentLookupError:
                 '''
-                I don't know how getMultiAdapter supposed to work, so instead
-                I wrote this ugly hack. Enjoy!
+                I don't know how getMultiAdapter supposed to work in this case,
+                so instead if figuring it out I wrote this ugly hack. Enjoy!
                 '''
                 if self.field:
                     self.terms = self.field.vocabulary
                 else:
                     raise
+
         if not self.other_token:
             return self.terms
         if self.other_token in self.terms:
