@@ -18,6 +18,10 @@ Optional choice widget for z3c library. This widget lets user select an entry fr
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
       include_package_data=True,
       zip_safe=False,
+      extras_require = dict(
+            test=['zope.testing', 'zope.app.testing', 'z3c.coverage',
+                  'unittest2', 'Nose', 'coverage']
+                            ),
       install_requires=[
           'z3c.form',
           'z3c.schema',
@@ -27,7 +31,7 @@ Optional choice widget for z3c library. This widget lets user select an entry fr
           'lxml'
       ],
       test_suite='nose.collector',
-      test_requires=['unittest2', 'Nose','coverage'],
+#      test_requires=['unittest2', 'Nose','coverage'],
       entry_points="""
       # -*- Entry points: -*-
       """,
