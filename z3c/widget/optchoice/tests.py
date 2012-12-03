@@ -173,9 +173,11 @@ def setupWidget(field):
 class TestFunctionalForm(unittest.TestCase):
     def setUp(self):
         import z3c.widget.optchoice
+
         xmlconfig.XMLConfig('meta.zcml', z3c.widget.optchoice)()
         xmlconfig.XMLConfig('configure.zcml', z3c.widget.optchoice)()
-        
+        component.provideAdapter(field.FieldWidgets)
+        component.provideAdapter(field.FieldWidgets, SampleForm)
         component.provideAdapter(DefaultTraversable, [None])
         self.context = ztc_setup.placefulSetUp(True)
     def tearDown(self):
