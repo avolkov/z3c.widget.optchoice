@@ -12,6 +12,7 @@ from z3c.form.term import ChoiceTermsVocabulary
 from z3c.form.testing import TestRequest
 from z3c.schema.optchoice import OptionalChoice
 from z3c.form import form, field, interfaces
+from z3c.schema.optchoice.interfaces import IOptionalChoice
 
 from zope.app.testing import setup as ztc_setup
 from zope.configuration import xmlconfig
@@ -177,7 +178,6 @@ class TestFunctionalForm(unittest.TestCase):
         xmlconfig.XMLConfig('meta.zcml', z3c.widget.optchoice)()
         xmlconfig.XMLConfig('configure.zcml', z3c.widget.optchoice)()
         component.provideAdapter(field.FieldWidgets)
-        component.provideAdapter(field.FieldWidgets, SampleForm)
         component.provideAdapter(DefaultTraversable, [None])
         self.context = ztc_setup.placefulSetUp(True)
     def tearDown(self):
