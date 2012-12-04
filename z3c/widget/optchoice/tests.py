@@ -3,10 +3,13 @@ import unittest2 as unittest
 import zope.interface
 import zope.schema
 from zope import component
+from zope.interface import implements, Interface
 from zope.schema.vocabulary import SimpleVocabulary, SimpleTerm
 from zope.traversing.adapters import DefaultTraversable
 from zope.traversing.namespace import view
 from zope.component.interfaces import ComponentLookupError
+from zope.component import adapts, getGlobalSiteManager, adaptedBy
+from zope.site.interfaces import IFolder
 
 from z3c.form.term import ChoiceTermsVocabulary
 from z3c.form.testing import TestRequest
@@ -18,8 +21,9 @@ from zope.configuration import xmlconfig
 from widget import OptChoiceWidget, OptChoiceWidgetCustomTokenFactoryFactory
 
 
+
 class Terms(SimpleVocabulary):
-    zope.interface.implements(interfaces.ITerms)
+    implements(interfaces.ITerms)
     def getValue(self, token):
         return self.getTermByToken(token).value
 
@@ -47,12 +51,9 @@ class ISchema(zope.interface.Interface):
             values=sample_terms,
             value_type=zope.schema.TextLine(),
                           )
-class SampleForm(form.AddForm):
-    fields = field.Fields(ISchema)
-    fields['test_name'].widgetFactory = \
-        OptChoiceWidgetCustomTokenFactoryFactory(('other', "Other"))
 
 class TestActions(action.Actions):
+    adapts(interfaces.IAddForm, interfaces.IFormLayer, IFolder)
     def append(self, name, action):
         """See z3c.form.interfaces.IActions"""
         if not name in self:
@@ -60,8 +61,13 @@ class TestActions(action.Actions):
         self._data_values.append(action)
         self._data[name] = action
 
-class TestContent(object):
-    zope.interface.implements(interfaces.IForm)
+gsm = getGlobalSiteManager()
+gsm.registerAdapter(TestActions)
+
+class SampleForm(form.AddForm):
+    fields = field.Fields(ISchema)
+    fields['test_name'].widgetFactory = \
+        OptChoiceWidgetCustomTokenFactoryFactory(('other', "Other"))
 
 class TestBasicOptChoice(unittest.TestCase):
     def setUp(self):
@@ -200,9 +206,6 @@ class TestFunctionalForm(unittest.TestCase):
         sample_form = SampleForm(self.context, TestRequest())
         data = sample_form.updateWidgets()
     def test_update_form(self):
-        content = TestContent()
         request = TestRequest()
-        component.provideAdapter(self.context.__class__ , interfaces.IAction)
         form = SampleForm(self.context, request)
-        manager = TestActions(form, request, content)
         form.update()
