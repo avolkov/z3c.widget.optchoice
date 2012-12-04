@@ -11,7 +11,7 @@ from zope.component.interfaces import ComponentLookupError
 from z3c.form.term import ChoiceTermsVocabulary
 from z3c.form.testing import TestRequest
 from z3c.schema.optchoice import OptionalChoice
-from z3c.form import form, field, interfaces, testing
+from z3c.form import form, field, interfaces, testing, action
 from z3c.schema.optchoice.interfaces import IOptionalChoice
 
 from zope.configuration import xmlconfig
@@ -51,6 +51,17 @@ class SampleForm(form.AddForm):
     fields = field.Fields(ISchema)
     fields['test_name'].widgetFactory = \
         OptChoiceWidgetCustomTokenFactoryFactory(('other', "Other"))
+
+class TestActions(action.Actions):
+    def append(self, name, action):
+        """See z3c.form.interfaces.IActions"""
+        if not name in self:
+            self._data_keys.append(name)
+        self._data_values.append(action)
+        self._data[name] = action
+
+class TestContent(object):
+    zope.interface.implements(interfaces.IForm)
 
 class TestBasicOptChoice(unittest.TestCase):
     def setUp(self):
@@ -182,10 +193,16 @@ class TestFunctionalForm(unittest.TestCase):
         testing.setUp(self)
         component.provideAdapter(field.FieldWidgets)
         component.provideAdapter(DefaultTraversable, [None])
+        self.context = self.globs['root']
     def tearDown(self):
         testing.tearDown(self)
-        #ztc_setup.placefulTearDown()
     def test_add_form(self):
-        #import pdb; pdb.set_trace()
-        sample_form = SampleForm(self.globs['root'], TestRequest())
+        sample_form = SampleForm(self.context, TestRequest())
         data = sample_form.updateWidgets()
+    def test_update_form(self):
+        content = TestContent()
+        request = TestRequest()
+        component.provideAdapter(self.context.__class__ , interfaces.IAction)
+        form = SampleForm(self.context, request)
+        manager = TestActions(form, request, content)
+        form.update()
