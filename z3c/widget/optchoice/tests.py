@@ -61,9 +61,6 @@ class TestActions(action.Actions):
         self._data_values.append(action)
         self._data[name] = action
 
-gsm = getGlobalSiteManager()
-gsm.registerAdapter(TestActions)
-
 class SampleForm(form.AddForm):
     fields = field.Fields(ISchema)
     fields['test_name'].widgetFactory = \
@@ -199,6 +196,8 @@ class TestFunctionalForm(unittest.TestCase):
         testing.setUp(self)
         component.provideAdapter(field.FieldWidgets)
         component.provideAdapter(DefaultTraversable, [None])
+        gsm = getGlobalSiteManager()
+        gsm.registerAdapter(TestActions)
         self.context = self.globs['root']
     def tearDown(self):
         testing.tearDown(self)
