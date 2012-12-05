@@ -208,22 +208,25 @@ def setupWidget(field):
     widget.name = 'bar'
     return widget
 
+def register_gsm():
+    gsm = getGlobalSiteManager()
+    gsm.registerAdapter(TestActions)
+    gsm.registerAdapter(SampleTerms)
 
 class TestFunctionalForm(unittest.TestCase):
     def setUp(self):
         testing.setUp(self)
         component.provideAdapter(field.FieldWidgets)
         component.provideAdapter(DefaultTraversable, [None])
-        gsm = getGlobalSiteManager()
-        gsm.registerAdapter(TestActions)
-        gsm.registerAdapter(SampleTerms)
         self.context = self.globs['root']
     def tearDown(self):
         testing.tearDown(self)
     def test_add_form(self):
+        register_gsm()
         sample_form = SampleForm(self.context, TestRequest())
         data = sample_form.updateWidgets()
     def test_update_form(self):
+        register_gsm()
         request = TestRequest()
         form = SampleForm(self.context, request)
         form.update()
