@@ -19,19 +19,24 @@ from z3c.form.widget import Widget, FieldWidget
 from z3c.form.browser.widget import HTMLSelectWidget
 from z3c.form import interfaces
 
-def append_to_terms(terms, input_field_token):
-    input_field_term = None
+def convert_to_term(terms, to_convert):
+    """
+    Convert tuple into term of a vocabulary that implements
+     interfaces.ITerms
+    """
     try:
-        verifyObject(zope.schema.interfaces.ITokenizedTerm, input_field_token)
-        input_field_term = input_field_token
+        verifyObject(zope.schema.interfaces.ITokenizedTerm, to_convert)
+        return to_convert
     except DoesNotImplement:
-        if len(input_field_token) == 2:
-                list(input_field_token).append(input_field_token[-1])
-        input_field_term = terms.createTerm(*input_field_token)
+        if len(to_convert) == 2:
+                list(to_convert).append(to_convert[-1])
+        return (x for x in terms).next().__class__(*to_convert)
+
+def append_to_terms(terms, input_field_token):
+    verifyObject(zope.schema.interfaces.ITokenizedTerm, input_field_token)
     all_terms = [ x for x in terms]
-    del input_field_token
-    all_terms.append(input_field_term)
-    return (terms.__class__(all_terms), input_field_term)
+    all_terms.append(input_field_token)
+    return (terms.__class__(all_terms), input_field_token)
 
 class OptChoiceWidget(HTMLSelectWidget, Widget):
     zope.interface.implements(interfaces.ISequenceWidget)
@@ -61,6 +66,7 @@ class OptChoiceWidget(HTMLSelectWidget, Widget):
                     interfaces.ITerms)
         if not self.other_token:
             return self.terms
+        self.other_token = convert_to_term(self.terms, self.other_token)
         if self.other_token in self.terms:
             return self.terms
         try:

@@ -43,7 +43,7 @@ class SampleTerms(ChoiceTermsVocabulary):
         self.form = form
         self.field = field
         self.widget = widget
-        self.vocabulary = field.vocabulary
+        self.terms = field.vocabulary
 
 sample_terms = Terms([
         SimpleTerm(value="first", title="First"),
