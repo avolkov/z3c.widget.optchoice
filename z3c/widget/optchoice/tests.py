@@ -23,9 +23,27 @@ from widget import OptChoiceWidget, OptChoiceWidgetCustomTokenFactoryFactory
 
 
 class Terms(SimpleVocabulary):
+    adapts(IFolder,interfaces.IFormLayer, interfaces.IAddForm, 
+           zope.schema.interfaces.IField, interfaces.IFieldWidget)
     implements(interfaces.ITerms)
     def getValue(self, token):
         return self.getTermByToken(token).value
+
+class SampleTerms(ChoiceTermsVocabulary):
+    zope.component.adapts(
+        zope.interface.Interface,
+        interfaces.IFormLayer,
+        zope.interface.Interface,
+        zope.schema.interfaces.IField,
+        interfaces.IWidget)
+    zope.interface.implements(interfaces.ITerms)
+    def __init__(self, context, request, form, field, widget):
+        self.context = context
+        self.request = request
+        self.form = form
+        self.field = field
+        self.widget = widget
+        self.vocabulary = field.vocabulary
 
 sample_terms = Terms([
         SimpleTerm(value="first", title="First"),
@@ -198,6 +216,7 @@ class TestFunctionalForm(unittest.TestCase):
         component.provideAdapter(DefaultTraversable, [None])
         gsm = getGlobalSiteManager()
         gsm.registerAdapter(TestActions)
+        gsm.registerAdapter(SampleTerms)
         self.context = self.globs['root']
     def tearDown(self):
         testing.tearDown(self)
