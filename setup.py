@@ -26,8 +26,8 @@ Optional choice widget for z3c library. This widget lets user select an entry fr
           'z3c.form',
           'z3c.schema',
           'zope.browserpage',
-          'zope.location <= 3.9.1' ,
-          'zope.component <= 3.9.1',
+          'zope.location <= 3.9.5' ,
+          'zope.component <= 3.9.5',
           'lxml'
       ],
       test_suite='nose.collector',

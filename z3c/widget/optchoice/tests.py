@@ -230,3 +230,9 @@ class TestFunctionalForm(unittest.TestCase):
         request = TestRequest()
         form = SampleForm(self.context, request)
         form.update()
+    def test_extract_form_data(self):
+        register_gsm()
+        request = TestRequest()
+        form = SampleForm(self.context, request)
+        form.update()
+        form.extractData()

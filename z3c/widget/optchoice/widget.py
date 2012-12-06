@@ -18,6 +18,7 @@ from zope.component.interfaces import ComponentLookupError
 from z3c.form.widget import Widget, FieldWidget
 from z3c.form.browser.widget import HTMLSelectWidget
 from z3c.form import interfaces
+from z3c.form.error import ValueErrorViewSnippet
 
 def convert_to_term(terms, to_convert):
     """
@@ -33,10 +34,19 @@ def convert_to_term(terms, to_convert):
         return (x for x in terms).next().__class__(*to_convert)
 
 def append_to_terms(terms, input_field_token):
-    verifyObject(zope.schema.interfaces.ITokenizedTerm, input_field_token)
-    all_terms = [ x for x in terms]
-    all_terms.append(input_field_token)
-    return (terms.__class__(all_terms), input_field_token)
+    try:
+        verifyObject(zope.schema.interfaces.ITokenizedTerm, input_field_token)
+        all_terms = [ x for x in terms]
+        if input_field_token.value in [ x.value for x in all_terms]:
+            return (terms, terms.by_value[input_field_token.value], )
+        all_terms.append(input_field_token)
+        return (terms.__class__(all_terms), input_field_token)
+    except ValueError:
+        import traceback
+        import sys
+        exc_type, exc_value, exc_traceback = sys.exc_info() 
+        e_stack = traceback.extract_tb(exc_traceback)
+        import pdb; pdb.set_trace()
 
 class OptChoiceWidget(HTMLSelectWidget, Widget):
     zope.interface.implements(interfaces.ISequenceWidget)
