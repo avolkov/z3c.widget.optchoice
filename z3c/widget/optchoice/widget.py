@@ -105,8 +105,8 @@ class OptChoiceWidget(HTMLSelectWidget, Widget):
         value = self.request.get(self.name, default)
         if not isinstance(value, list):
             value = [value]
-        if self.other_token and self.other_token.value in value:
-            value = [self.request.get("%s-input" % self.name, default)]
+        if len(value) > 1:
+            value = value[:1]
         return value
     def isSelected(self, term):
         return term.token in self.value
