@@ -136,6 +136,8 @@ def OptchoiceWidgetCustomTokenFactory(field, request, other_token=None):
     """
     IField widget factory that specifies other token for optional input field
     """
+    if other_token:
+        other_token = tuple([ unicode(x) for x in other_token ])
     return FieldWidget(field, OptChoiceWidget(request, other_token=other_token))
 
 #Sorry for javascript names, I blame zope.
