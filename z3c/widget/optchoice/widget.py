@@ -99,7 +99,7 @@ class OptChoiceWidget(HTMLSelectWidget, Widget):
         if not isinstance(value, list):
             value = [value]
         if len(value) > 1:
-            value = value[:1]
+            value = value[1:]
         return value
     def isSelected(self, term):
         return term.token in self.value
