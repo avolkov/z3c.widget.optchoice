@@ -20,6 +20,17 @@ from z3c.form.browser.widget import HTMLSelectWidget
 from z3c.form import interfaces
 from z3c.form.error import ValueErrorViewSnippet
 
+
+def wrapGW(func):
+    """Wrap GetValue function, but this could be used in other cases"""
+    def wrappedGW(token):
+        """Return value token even if it is not in list"""
+        try:
+            return func(token)
+        except LookupError:
+            return token
+    return wrappedGW
+
 def convert_to_term(terms, to_convert):
     """
     Convert tuple into term of a vocabulary that implements
@@ -44,10 +55,21 @@ def append_to_terms(terms, input_field_token):
 class OptChoiceWidget(HTMLSelectWidget, Widget):
     zope.interface.implements(interfaces.ISequenceWidget)
     value = ()
-    terms = None
     klass = u'optchoice-widget'
     noValueToken ='--NOVALUE--'
     other_token = None
+
+    _terms = None
+    @property
+    def terms(self):
+        return self._terms
+    @terms.setter
+    def terms(self, value):
+        self._terms = value
+        self._terms.getValue = wrapGW(self.terms.getValue)
+    @terms.deleter
+    def terms(self):
+        del self._terms
 
     def __init__(self, request, other_token=None):
         dirname = os.path.dirname(os.path.abspath(__file__))
@@ -55,7 +77,6 @@ class OptChoiceWidget(HTMLSelectWidget, Widget):
         self.template = ViewPageTemplateFile(outp)
         if other_token:
             self.other_token = other_token
-
         super(self.__class__, self).__init__(request)
 
     def render(self):
@@ -82,13 +103,14 @@ class OptChoiceWidget(HTMLSelectWidget, Widget):
         except DoesNotImplement:
             pass
 
-        #Assume self.terms.terms is SimpleVocabulary-ish
+        #Assume self.terms.terms are SimpleVocabulary-ish
         verifyObject(interfaces.ITerms, self.terms)
         verifyObject(zope.schema.interfaces.IVocabularyTokenized,
                       self.terms.terms)
         self.terms.terms, self.other_token = \
             append_to_terms(self.terms.terms, self.other_token)
         return self.terms
+
     def update(self):
         """This is where all the interesting stuff happens"""
         self.updateTerms()
