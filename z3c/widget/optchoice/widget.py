@@ -120,7 +120,7 @@ class OptChoiceWidget(HTMLSelectWidget, Widget):
         value = self.request.get(self.name, default)
         if not isinstance(value, list):
             value = [value]
-        if len(value) > 1:
+        if len(value) > 1 and value[1]:
             value = value[1:]
         return value
     def isSelected(self, term):
