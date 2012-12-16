@@ -5,7 +5,7 @@ from functools import partial
 import zope.interface
 import zope.schema
 import zope.component
-import zope.interface
+from zope.schema.interfaces import RequiredMissing
 
 from zope.i18n import translate
 from zope.component import provideAdapter
@@ -62,6 +62,7 @@ class OptChoiceWidget(HTMLSelectWidget, Widget):
     onchange = open(os.path.join(os.path.dirname(__file__),
                                  'js/show_input_field.js')).read()
     _terms = None
+    value = None
     @property
     def terms(self):
         return self._terms
@@ -90,6 +91,8 @@ class OptChoiceWidget(HTMLSelectWidget, Widget):
         return self.template(self)
 
     def updateTerms(self):
+        if self.value:
+            self._validate(self.value)
         if self.terms is None:
             self.terms = zope.component.getMultiAdapter(
                     (self.context, self.request, self.form, self.field, self),
@@ -116,26 +119,21 @@ class OptChoiceWidget(HTMLSelectWidget, Widget):
         self.terms.terms, self.other_token = \
             append_to_terms(self.terms.terms, self.other_token)
         return self.terms
-
+    def _validate(self, value):
+        if len(value) == 1 and not value[0]:
+            raise RequiredMissing
     def update(self):
         """This is where all the interesting stuff happens"""
         self.updateTerms()
-        value = self.request.get(self.name, None)
-        if value and len(value)> 1:
-            if unicode(value[0]) == unicode(self.other_token.token):
-                self.other_selected = True
-            else:
-                self.other_selected = False
-        else:
-            self.other_selected = False
         super(self.__class__, self).update()
     def extract(self, default=interfaces.NO_VALUE):
         """Extract values from the request"""
         value = self.request.get(self.name, default)
         if not isinstance(value, list):
             value = [value]
-        if len(value) > 1 and value[1]:
+        if unicode(value[0]) == unicode(self.other_token.token):
             value = value[1:]
+        self.value = value
         return value
     def isSelected(self, term):
         return term.token in self.value
