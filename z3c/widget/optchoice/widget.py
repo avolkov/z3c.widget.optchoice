@@ -1,4 +1,5 @@
 import os.path
+from datetime import datetime
 from functools import partial
 
 import zope.interface
@@ -19,7 +20,6 @@ from z3c.form.widget import Widget, FieldWidget
 from z3c.form.browser.widget import HTMLSelectWidget
 from z3c.form import interfaces
 from z3c.form.error import ValueErrorViewSnippet
-
 
 def wrapGW(func):
     """Wrap GetValue function, but this could be used in other cases"""
@@ -58,6 +58,9 @@ class OptChoiceWidget(HTMLSelectWidget, Widget):
     klass = u'optchoice-widget'
     noValueToken ='--NOVALUE--'
     other_token = None
+    other_selected = False
+    onchange = open(os.path.join(os.path.dirname(__file__),
+                                 'js/show_input_field.js')).read()
 
     _terms = None
     @property
@@ -114,6 +117,14 @@ class OptChoiceWidget(HTMLSelectWidget, Widget):
     def update(self):
         """This is where all the interesting stuff happens"""
         self.updateTerms()
+        value = self.request.get(self.name, None)
+        if value and len(value)> 1:
+            if unicode(value[0]) == unicode(self.other_token.token):
+                self.other_selected = True
+            else:
+                self.other_selected = False
+        else:
+            self.other_selected = False
         super(self.__class__, self).update()
     def extract(self, default=interfaces.NO_VALUE):
         """Extract values from the request"""
