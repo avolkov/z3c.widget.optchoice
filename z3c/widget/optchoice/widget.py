@@ -61,7 +61,6 @@ class OptChoiceWidget(HTMLSelectWidget, Widget):
     other_selected = False
     onchange = open(os.path.join(os.path.dirname(__file__),
                                  'js/show_input_field.js')).read()
-
     _terms = None
     @property
     def terms(self):
@@ -78,13 +77,15 @@ class OptChoiceWidget(HTMLSelectWidget, Widget):
         dirname = os.path.dirname(os.path.abspath(__file__))
         outp = os.path.join(dirname, 'templates', 'optchoice.pt')
         self.template = ViewPageTemplateFile(outp)
+        
         if other_token:
             self.other_token = other_token
         super(self.__class__, self).__init__(request)
 
     def render(self):
-        template = self.template
-        return template(self)
+        self.onchange = self.onchange.replace(
+                                "NAME_PLACEHOLDER", "%s:input" % self.name)
+        return self.template(self)
 
     def updateTerms(self):
         if self.terms is None:
