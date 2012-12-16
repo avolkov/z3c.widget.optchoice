@@ -28,10 +28,10 @@ Optional choice widget for z3c library. This widget lets user select an entry fr
           'zope.browserpage',
           'zope.location <= 3.9.5' ,
           'zope.component <= 3.9.5',
-          'lxml'
+          'lxml',
+          'plone.app.jquery',
       ],
       test_suite='nose.collector',
-#      test_requires=['unittest2', 'Nose','coverage'],
       entry_points="""
       # -*- Entry points: -*-
       """,
