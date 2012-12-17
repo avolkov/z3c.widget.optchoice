@@ -85,7 +85,7 @@ class OptChoiceWidget(HTMLSelectWidget, Widget):
 
     def render(self):
         self.onchange = self.onchange.replace(
-                                "NAME_PLACEHOLDER", "%s:input" % self.name)
+                                "NAME_PLACEHOLDER", "%s:textarea" % self.name)
         self.onchange = self.onchange.replace(
                                 "VALUE_PLACEHOLDER", self.other_token.token)
         return self.template(self)
