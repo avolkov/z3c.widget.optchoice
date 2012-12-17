@@ -1,3 +1,4 @@
-include *.txt *.zcml *.cfg *.pt
-recursive-include z3ce *.txt *.py *.zcml *.cfg *.pt
+include *.txt *.zcml *.cfg *.pt *.js
+recursive-include z3ce *.txt *.py *.zcml *.cfg *.pt *.js
 recursive-include z3c/widget/optchoice/templates *.pt
+recursive-include z3c/widget/optchoice/js *.js
